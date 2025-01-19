@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bad Evil Private Server</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            background: #000000; /* Black background */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .container {
+            background: linear-gradient(135deg, #1e1e1e, #3a3a3a); /* Dark gradient background */
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+            text-align: center;
+            width: 450px;
+            max-width: 100%;
+            transition: transform 0.3s ease, box-shadow 0.3s ease, filter 0.3s ease; /* Added transition for filter */
+            backdrop-filter: blur(5px); /* Blur background */
+        }
+
+        .container:hover {
+            transform: scale(1.05);
+            box-shadow: 0 15px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        h2 {
+            color: #ffffff;
+            font-size: 32px;
+            margin-bottom: 20px;
+            font-weight: 600;
+            letter-spacing: 1px;
+        }
+
+        .period, .result-box {
+            font-size: 20px;
+            padding: 20px;
+            border-radius: 12px;
+            background: #f9f9f9;
+            color: #333;
+            margin: 20px 0;
+            font-weight: bold;
+            border: 1px solid #ddd;
+            transition: all 0.3s ease;
+        }
+
+        .period {
+            background: #e0f7fa;
+            border-color: #00bcd4;
+        }
+
+        .result-box {
+            background: #e8f5e9;
+            color: #388e3c;
+            display: none;
+            border-color: #388e3c;
+        }
+
+        button {
+            padding: 15px 30px;
+            background: #00796b;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            cursor: pointer;
+            transition: background 0.3s ease, transform 0.3s ease;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+
+        button:hover {
+            background: #004d40;
+            transform: scale(1.1);
+        }
+
+        .history {
+            margin-top: 30px;
+            background: #f7f7f7;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .history h3 {
+            margin-top: 0;
+            color: #333;
+            font-size: 24px;
+            font-weight: 500;
+        }
+
+        .history-item {
+            padding: 12px;
+            border-bottom: 1px solid #ddd;
+            color: #555;
+            font-size: 18px;
+            transition: background 0.3s ease;
+        }
+
+        .history-item:last-child {
+            border-bottom: none;
+        }
+
+        .history-item span {
+            font-weight: bold;
+            color: #00796b;
+        }
+
+        .history-item:hover {
+            background-color: #e0f7fa;
+            cursor: pointer;
+        }
+
+        .history-item span.result {
+            color: #388e3c;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Private Server</h2>
+        <div class="period" id="period1m">Period Number will appear here</div>
+        <div class="result-box" id="resultBox">Result: Big</div>
+        <button onclick="generatePeriodAndShowResult()">Show Result</button>
+
+        <div class="history" id="historyContainer">
+            <h3>History</h3>
+            <div id="historyList">No history yet.</div>
+        </div>
+    </div>
+
+    <script>
+        let lastGeneratedPeriod = ""; // To track the last generated period number
+
+        // On page load, check if we have saved period and result in localStorage
+        window.onload = function() {
+            const savedPeriod = localStorage.getItem("lastPeriod");
+            const savedResult = localStorage.getItem("lastResult");
+
+            if (savedPeriod && savedResult) {
+                // If saved period and result exist, show them in the UI
+                const periodElement = document.getElementById("period1m");
+                const resultBox = document.getElementById("resultBox");
+                periodElement.textContent = savedPeriod;
+                resultBox.textContent = `Result: ${savedResult}`;
+                resultBox.style.display = "block";
+            }
+        };
+
+        function generatePeriodAndShowResult() {
+            const now = new Date();
+            const totalMinutes = Math.floor(now.getUTCHours() * 60 + now.getUTCMinutes());
+
+            // Generate period number
+            const periodNumber = `${now.getUTCFullYear()}${(now.getUTCMonth() + 1)
+                .toString()
+                .padStart(2, "0")}${now.getUTCDate().toString().padStart(2, "0")}1000${(
+                10001 + totalMinutes
+            ).toString()}`;
+
+            // Only generate result if the period number is new
+            if (periodNumber !== lastGeneratedPeriod) {
+                lastGeneratedPeriod = periodNumber;
+
+                // Display period number in the UI
+                const periodElement = document.getElementById("period1m");
+                periodElement.textContent = periodNumber;
+
+                // Generate and display result (Big/Small)
+                const resultBox = document.getElementById("resultBox");
+                const random = Math.random(); // Random number between 0 and 1
+                const result = random > 0.5 ? "Big" : "Small";
+
+                resultBox.textContent = `Result: ${result}`;
+                resultBox.style.display = "block"; // Make it visible
+
+                // Add to history
+                addToHistory(periodNumber, result);
+
+                // Save the result and period to localStorage
+                localStorage.setItem("lastPeriod", periodNumber);
+                localStorage.setItem("lastResult", result);
+            }
+        }
+
+        function addToHistory(periodNumber, result) {
+            const historyList = document.getElementById("historyList");
+
+            // Create a new history item
+            const historyItem = document.createElement("div");
+            historyItem.classList.add("history-item");
+            historyItem.innerHTML = `Period: <span>${periodNumber}</span>, Result: <span class="result">${result}</span>`;
+
+            // Add it to the history
+            if (historyList.textContent === "No history yet.") {
+                historyList.textContent = ""; // Clear default text
+            }
+            historyList.prepend(historyItem); // Add new item at the top
+        }
+    </script>
+</body>
+</html>
